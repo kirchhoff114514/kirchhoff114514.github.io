@@ -1,27 +1,27 @@
 {
   "site": {
-    "url": "https://drowsyindra.github.io",
+    "url": "https://kirchhoff114514.github.io",
     "title": "博客",
-    "description": "这是一个有理想的人走过的漫长道路",
-    "keywords": "Kunyi,blog,dream,indra,博客,逐梦",
+    "description": "这里记录了我的足迹",
+    "keywords": "kirchhoff114514,robotics,嵌入式",
     "lang": "zh-CN",
     "favicon": "/favicon.ico",
     "appleTouchIcon": "/apple-touch-icon.png"
   },
   "author": {
-    "name": "Kunyi",
-    "twitterId": "@lxchapu",
+    "name": "kirchhoff114514",
+    "twitterId": "",
     "avatar": "/img/avatar.jpg"
   },
   "hero": {
-    "name": "Kunyi",
-    "bio": "一个为理想痴狂实干的疯子",
-    "description": "理想是追随稚晖君,欢迎一同学习",
+    "name": "白告",
+    "bio": "浙江大学机械工程学院机械工程专业23级，学习方向是足式机器人运动控制",
+    "description": "",
     "socials": [
       {
         "name": "Github",
         "icon": "icon-github",
-        "url": "https://github.com/drowsyindra",
+        "url": "https://github.com/kirchhoff114514",
         "color": "rgb(239, 70, 107)"
       },
       {
@@ -33,7 +33,7 @@
       {
         "name": "Email",
         "icon": "icon-mail",
-        "url": "mailto:1162137506@qq.com",
+        "url": "mailto:kirchhoff114514@gmail.com",
         "color": "rgb(150, 215, 201)"
       },
       {
@@ -49,31 +49,76 @@
         "color": "rgb(106,90,205)"
       }
     ],
-    "yiyan": "装作一个白日梦想家，然后征服全世界。"
+    "yiyan": "黄金时代"
   },
   "color": {
     "accent": [
-      { "light": "#F55555", "dark": "#FCCF31" },
-      { "light": "#0396FF", "dark": "#ABDCFF" },
-      { "light": "#fb7287", "dark": "#99D8CF" },
-      { "light": "#F072B6", "dark": "#FFF886" },
-      { "light": "#9F44D3", "dark": "#E2B0FF" },
-      { "light": "#FF6666", "dark": "#A1CCD1" },
-      { "light": "#F6416C", "dark": "#838BC6" },
-      { "light": "#32CCBC", "dark": "#90F7EC" },
-      { "light": "#33A6B8", "dark": "#79F1A4" },
-      { "light": "#F55555", "dark": "#FCCF31" }
+      {
+        "light": "#F55555",
+        "dark": "#FCCF31"
+      },
+      {
+        "light": "#0396FF",
+        "dark": "#ABDCFF"
+      },
+      {
+        "light": "#fb7287",
+        "dark": "#99D8CF"
+      },
+      {
+        "light": "#F072B6",
+        "dark": "#FFF886"
+      },
+      {
+        "light": "#9F44D3",
+        "dark": "#E2B0FF"
+      },
+      {
+        "light": "#FF6666",
+        "dark": "#A1CCD1"
+      },
+      {
+        "light": "#F6416C",
+        "dark": "#838BC6"
+      },
+      {
+        "light": "#32CCBC",
+        "dark": "#90F7EC"
+      },
+      {
+        "light": "#33A6B8",
+        "dark": "#79F1A4"
+      },
+      {
+        "light": "#F55555",
+        "dark": "#FCCF31"
+      }
     ],
     "bg": {
-      "primary": { "light": "#fffff0", "dark": "#1c1c1e" },
-      "secondary": { "light": "#EEEEE0", "dark": "#27272a" }
+      "primary": {
+        "light": "#fffff0",
+        "dark": "#1c1c1e"
+      },
+      "secondary": {
+        "light": "#EEEEE0",
+        "dark": "#27272a"
+      }
     },
     "text": {
-      "primary": { "light": "#373a3c", "dark": "#ffffff" },
-      "secondary": { "light": "#71717a", "dark": "#d1d5db" }
+      "primary": {
+        "light": "#373a3c",
+        "dark": "#ffffff"
+      },
+      "secondary": {
+        "light": "#71717a",
+        "dark": "#d1d5db"
+      }
     },
     "border": {
-      "primary": { "light": "#e4e4e7", "dark": "#3f3f46" }
+      "primary": {
+        "light": "#e4e4e7",
+        "dark": "#3f3f46"
+      }
     }
   },
   "menus": [
