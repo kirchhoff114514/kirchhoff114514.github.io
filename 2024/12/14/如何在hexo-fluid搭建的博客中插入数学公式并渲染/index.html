@@ -19,21 +19,24 @@
   <meta name="author" content="kirchhoff114514">
   <meta name="keywords" content="">
   
-    <meta name="description" content="Welcome to Hexo! This is your very first post. Check documentation for more info. If you get any problems when using Hexo, you can find the answer in troubleshooting or you can ask me on GitHub. Quick">
+    <meta name="description" content="如何在hexo+fluid搭建的博客中插入数学公式并渲染 当撰写一篇含有数学公式的博文时，我们最终想要的效果是在网页上看到数学公式。这个过程可以分为两个步骤：  把纸上写的或者脑中想的公式用某种格式输入到.md文件中 渲染引擎把1中格式化输入的公式渲染回人类能看懂的形式  下面我们对这两个步骤逐一分析 输入 具体如何输入请参考下面这篇文章 https:&#x2F;&#x2F;www.zybuluo.com&#x2F;codee">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Hello World">
-<meta property="og:url" content="http://kirchhoff114514.github.io/2024/12/10/hello-world/index.html">
+<meta property="og:title" content="如何在hexo+fluid搭建的博客中插入数学公式并渲染">
+<meta property="og:url" content="http://kirchhoff114514.github.io/2024/12/14/%E5%A6%82%E4%BD%95%E5%9C%A8hexo-fluid%E6%90%AD%E5%BB%BA%E7%9A%84%E5%8D%9A%E5%AE%A2%E4%B8%AD%E6%8F%92%E5%85%A5%E6%95%B0%E5%AD%A6%E5%85%AC%E5%BC%8F%E5%B9%B6%E6%B8%B2%E6%9F%93/index.html">
 <meta property="og:site_name" content="白告的小站">
-<meta property="og:description" content="Welcome to Hexo! This is your very first post. Check documentation for more info. If you get any problems when using Hexo, you can find the answer in troubleshooting or you can ask me on GitHub. Quick">
+<meta property="og:description" content="如何在hexo+fluid搭建的博客中插入数学公式并渲染 当撰写一篇含有数学公式的博文时，我们最终想要的效果是在网页上看到数学公式。这个过程可以分为两个步骤：  把纸上写的或者脑中想的公式用某种格式输入到.md文件中 渲染引擎把1中格式化输入的公式渲染回人类能看懂的形式  下面我们对这两个步骤逐一分析 输入 具体如何输入请参考下面这篇文章 https:&#x2F;&#x2F;www.zybuluo.com&#x2F;codee">
 <meta property="og:locale" content="zh_CN">
-<meta property="article:published_time" content="2024-12-10T03:06:47.170Z">
-<meta property="article:modified_time" content="2024-12-10T03:06:47.170Z">
+<meta property="og:image" content="http://kirchhoff114514.github.io/%5Cimg%5Cpost%5C%E5%A6%82%E4%BD%95%E5%9C%A8hexo+fluid%E6%90%AD%E5%BB%BA%E7%9A%84%E5%8D%9A%E5%AE%A2%E4%B8%AD%E6%8F%92%E5%85%A5%E6%95%B0%E5%AD%A6%E5%85%AC%E5%BC%8F%E5%B9%B6%E6%B8%B2%E6%9F%93%5Cfreecompress-%E5%90%AB%E6%9C%89%E6%95%B0%E5%AD%A6%E5%85%AC%E5%BC%8F%E7%9A%84%E5%8D%9A%E5%AE%A2.png">
+<meta property="article:published_time" content="2024-12-14T09:45:14.000Z">
+<meta property="article:modified_time" content="2024-12-14T10:15:28.817Z">
 <meta property="article:author" content="kirchhoff114514">
+<meta property="article:tag" content="数学公式">
 <meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="http://kirchhoff114514.github.io/%5Cimg%5Cpost%5C%E5%A6%82%E4%BD%95%E5%9C%A8hexo+fluid%E6%90%AD%E5%BB%BA%E7%9A%84%E5%8D%9A%E5%AE%A2%E4%B8%AD%E6%8F%92%E5%85%A5%E6%95%B0%E5%AD%A6%E5%85%AC%E5%BC%8F%E5%B9%B6%E6%B8%B2%E6%9F%93%5Cfreecompress-%E5%90%AB%E6%9C%89%E6%95%B0%E5%AD%A6%E5%85%AC%E5%BC%8F%E7%9A%84%E5%8D%9A%E5%AE%A2.png">
   
   
   
-  <title>Hello World - 白告的小站</title>
+  <title>如何在hexo+fluid搭建的博客中插入数学公式并渲染 - 白告的小站</title>
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
 
@@ -201,7 +204,7 @@
       <div class="banner-text text-center fade-in-up">
         <div class="h2">
           
-            <span id="subtitle" data-typed-text="Hello World"></span>
+            <span id="subtitle" data-typed-text="如何在hexo+fluid搭建的博客中插入数学公式并渲染"></span>
           
         </div>
 
@@ -212,8 +215,8 @@
     
       <span class="post-meta">
         <i class="iconfont icon-date-fill" aria-hidden="true"></i>
-        <time datetime="2024-12-10 11:06" pubdate>
-          2024年12月10日 上午
+        <time datetime="2024-12-14 17:45" pubdate>
+          2024年12月14日 下午
         </time>
       </span>
     
@@ -224,7 +227,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          18 字
+          327 字
         
       </span>
     
@@ -235,7 +238,7 @@
         
         
         
-          1 分钟
+          3 分钟
         
       </span>
     
@@ -272,25 +275,25 @@
       <div class="container nopadding-x-md" id="board-ctn">
         <div id="board">
           <article class="post-content mx-auto">
-            <h1 id="seo-header">Hello World</h1>
+            <h1 id="seo-header">如何在hexo+fluid搭建的博客中插入数学公式并渲染</h1>
             
             
               <div class="markdown-body">
                 
-                <p>Welcome to <a target="_blank" rel="noopener" href="https://hexo.io/">Hexo</a>! This is your very first post. Check <a target="_blank" rel="noopener" href="https://hexo.io/docs/">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a target="_blank" rel="noopener" href="https://hexo.io/docs/troubleshooting.html">troubleshooting</a> or you can ask me on <a target="_blank" rel="noopener" href="https://github.com/hexojs/hexo/issues">GitHub</a>.</p>
-<h2 id="Quick-Start">Quick Start</h2>
-<h3 id="Create-a-new-post">Create a new post</h3>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">$ hexo new <span class="hljs-string">&quot;My New Post&quot;</span><br></code></pre></td></tr></table></figure>
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/writing.html">Writing</a></p>
-<h3 id="Run-server">Run server</h3>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">$ hexo server<br></code></pre></td></tr></table></figure>
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/server.html">Server</a></p>
-<h3 id="Generate-static-files">Generate static files</h3>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">$ hexo generate<br></code></pre></td></tr></table></figure>
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/generating.html">Generating</a></p>
-<h3 id="Deploy-to-remote-sites">Deploy to remote sites</h3>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs bash">$ hexo deploy<br></code></pre></td></tr></table></figure>
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>
+                <h1>如何在hexo+fluid搭建的博客中插入数学公式并渲染</h1>
+<p>当撰写一篇含有数学公式的博文时，我们最终想要的效果是在<strong>网页上</strong>看到数学公式。这个过程可以分为两个步骤：</p>
+<ol>
+<li>把纸上写的或者脑中想的公式用某种格式输入到.md文件中</li>
+<li>渲染引擎把1中格式化输入的公式渲染回人类能看懂的形式</li>
+</ol>
+<p>下面我们对这两个步骤逐一分析</p>
+<h2 id="输入">输入</h2>
+<p>具体如何输入请参考下面这篇文章</p>
+<p><a target="_blank" rel="noopener" href="https://www.zybuluo.com/codeep/note/163962#mjx-eqn-eqsample">https://www.zybuluo.com/codeep/note/163962#mjx-eqn-eqsample</a></p>
+<h2 id="渲染">渲染</h2>
+<p>假设我们已经把公式格式化输入到.md文件中，由于hexo默认的markdown渲染器在渲染复杂公式时会出问题，所以我们要进行一些配置。详情见官方文档的Latex-数学公式章节<a target="_blank" rel="noopener" href="https://hexo.fluid-dev.com/docs/guide/#latex-%E6%95%B0%E5%AD%A6%E5%85%AC%E5%BC%8F">https://hexo.fluid-dev.com/docs/guide/#latex-数学公式</a></p>
+<p>==注意==：第一步主题配置中（下面代码所示）enable必须为true，specific必须为false，engine可以保持mathjax不动也可以改为katex。如果specific为true，并且在文章开头没有加上math: true，文章里的公式会渲染两遍。（比如你写了一个矩阵，到网页看会出现两个矩阵）</p>
+<figure class="highlight yml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs yml"><span class="hljs-attr">post:</span><br>  <span class="hljs-attr">math:</span><br>    <span class="hljs-attr">enable:</span> <span class="hljs-literal">true</span><br>    <span class="hljs-attr">specific:</span> <span class="hljs-literal">false</span><br>    <span class="hljs-attr">engine:</span> <span class="hljs-string">mathjax</span><br></code></pre></td></tr></table></figure>
 
                 
               </div>
@@ -299,6 +302,34 @@
             <div>
               <div class="post-metas my-3">
   
+    <div class="post-meta mr-3 d-flex align-items-center">
+      <i class="iconfont icon-category"></i>
+      
+
+<span class="category-chains">
+  
+  
+    
+      <span class="category-chain">
+        
+  <a href="/categories/%E5%8D%9A%E5%AE%A2%E6%90%AD%E5%BB%BA/" class="category-chain-item">博客搭建</a>
+  
+  
+
+      </span>
+    
+  
+</span>
+
+    </div>
+  
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/%E6%95%B0%E5%AD%A6%E5%85%AC%E5%BC%8F/" class="print-no-link">#数学公式</a>
+      
+    </div>
   
 </div>
 
@@ -308,8 +339,8 @@
 
   <div class="license-box my-3">
     <div class="license-title">
-      <div>Hello World</div>
-      <div>http://kirchhoff114514.github.io/2024/12/10/hello-world/</div>
+      <div>如何在hexo+fluid搭建的博客中插入数学公式并渲染</div>
+      <div>http://kirchhoff114514.github.io/2024/12/14/如何在hexo-fluid搭建的博客中插入数学公式并渲染/</div>
     </div>
     <div class="license-meta">
       
@@ -321,7 +352,7 @@
       
         <div class="license-meta-item license-meta-date">
           <div>发布于</div>
-          <div>2024年12月10日</div>
+          <div>2024年12月14日</div>
         </div>
       
       
@@ -353,15 +384,15 @@
                   <article class="post-prev col-6">
                     
                     
-                      <a href="/2024/12/13/%E6%9C%BA%E5%99%A8%E4%BA%BA%E5%AD%A6%EF%BC%881%EF%BC%89%E7%AC%94%E8%AE%B0/" title="机器人学（1）笔记">
-                        <i class="iconfont icon-arrowleft"></i>
-                        <span class="hidden-mobile">机器人学（1）笔记</span>
-                        <span class="visible-mobile">上一篇</span>
-                      </a>
-                    
                   </article>
                   <article class="post-next col-6">
                     
+                    
+                      <a href="/2024/12/13/%E6%9C%BA%E5%99%A8%E4%BA%BA%E5%AD%A6%EF%BC%881%EF%BC%89%E7%AC%94%E8%AE%B0/" title="机器人学（1）笔记">
+                        <span class="hidden-mobile">机器人学（1）笔记</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
                     
                   </article>
                 </div>
