@@ -19,15 +19,20 @@
   <meta name="author" content="kirchhoff114514">
   <meta name="keywords" content="">
   
-    <meta property="og:type" content="article">
+    <meta name="description" content="前言 去年11月刚搭建个人博客时，我就发觉首页上文章的封面和文章内部的图片不能正常显示，但在host本地查看网站时却是可以显示的。搭建完博客后，写博客的事鸽了很久，于是图片显示问题也随之搁置。最近又手痒想要写点东西，于是打算解决这个问题。然而，跟着网上的教程走并没有解决问题。过一番摸索，基于下面这篇文章，对一些没有提到的细节加以改进后解决了这个问题。 必看前置文章 https:&#x2F;&#x2F;blog.cs">
+<meta property="og:type" content="article">
 <meta property="og:title" content="基于Typora插入图片到hexo框架博客中">
 <meta property="og:url" content="http://kirchhoff114514.github.io/2025/02/25/%E5%9F%BA%E4%BA%8ETypora%E6%8F%92%E5%85%A5%E5%9B%BE%E7%89%87%E5%88%B0hexo%E6%A1%86%E6%9E%B6%E5%8D%9A%E5%AE%A2%E4%B8%AD/index.html">
 <meta property="og:site_name" content="白告的小站">
+<meta property="og:description" content="前言 去年11月刚搭建个人博客时，我就发觉首页上文章的封面和文章内部的图片不能正常显示，但在host本地查看网站时却是可以显示的。搭建完博客后，写博客的事鸽了很久，于是图片显示问题也随之搁置。最近又手痒想要写点东西，于是打算解决这个问题。然而，跟着网上的教程走并没有解决问题。过一番摸索，基于下面这篇文章，对一些没有提到的细节加以改进后解决了这个问题。 必看前置文章 https:&#x2F;&#x2F;blog.cs">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="http://kirchhoff114514.github.io/2025/02/25/%E5%9F%BA%E4%BA%8ETypora%E6%8F%92%E5%85%A5%E5%9B%BE%E7%89%87%E5%88%B0hexo%E6%A1%86%E6%9E%B6%E5%8D%9A%E5%AE%A2%E4%B8%AD/headphoto.png">
+<meta property="og:image" content="http://kirchhoff114514.github.io/2025/02/25/%E5%9F%BA%E4%BA%8ETypora%E6%8F%92%E5%85%A5%E5%9B%BE%E7%89%87%E5%88%B0hexo%E6%A1%86%E6%9E%B6%E5%8D%9A%E5%AE%A2%E4%B8%AD/image-20250225211920912.png">
+<meta property="og:image" content="http://kirchhoff114514.github.io/2025/02/25/%E5%9F%BA%E4%BA%8ETypora%E6%8F%92%E5%85%A5%E5%9B%BE%E7%89%87%E5%88%B0hexo%E6%A1%86%E6%9E%B6%E5%8D%9A%E5%AE%A2%E4%B8%AD/image-20250225212741612.png">
 <meta property="article:published_time" content="2025-02-25T12:12:25.000Z">
-<meta property="article:modified_time" content="2025-02-25T12:13:40.473Z">
+<meta property="article:modified_time" content="2025-02-25T13:54:18.978Z">
 <meta property="article:author" content="kirchhoff114514">
+<meta property="article:tag" content="博客搭建">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="http://kirchhoff114514.github.io/2025/02/25/%E5%9F%BA%E4%BA%8ETypora%E6%8F%92%E5%85%A5%E5%9B%BE%E7%89%87%E5%88%B0hexo%E6%A1%86%E6%9E%B6%E5%8D%9A%E5%AE%A2%E4%B8%AD/headphoto.png">
   
@@ -224,7 +229,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          0 字
+          802 字
         
       </span>
     
@@ -235,7 +240,7 @@
         
         
         
-          1 分钟
+          7 分钟
         
       </span>
     
@@ -278,6 +283,36 @@
               <div class="markdown-body">
                 
                 <img src="/2025/02/25/%E5%9F%BA%E4%BA%8ETypora%E6%8F%92%E5%85%A5%E5%9B%BE%E7%89%87%E5%88%B0hexo%E6%A1%86%E6%9E%B6%E5%8D%9A%E5%AE%A2%E4%B8%AD/headphoto.png" srcset="/img/loading.gif" lazyload class="" title="headphoto">
+<h1>前言</h1>
+<p>去年11月刚搭建个人博客时，我就发觉首页上文章的封面和文章内部的图片不能正常显示，但在host本地查看网站时却是可以显示的。搭建完博客后，写博客的事鸽了很久，于是图片显示问题也随之搁置。最近又手痒想要写点东西，于是打算解决这个问题。然而，跟着网上的教程走并没有解决问题。过一番摸索，基于下面这篇文章，对一些没有提到的细节加以改进后解决了这个问题。</p>
+<h1>必看前置文章</h1>
+<p><a target="_blank" rel="noopener" href="https://blog.csdn.net/lengcs/article/details/143816877">https://blog.csdn.net/lengcs/article/details/143816877</a></p>
+<p>我的操作是基于这篇博文的，请务必认真看过这篇文章后再来看我写的注意点</p>
+<h1>文章内部图片插入的注意点</h1>
+<img src="/2025/02/25/%E5%9F%BA%E4%BA%8ETypora%E6%8F%92%E5%85%A5%E5%9B%BE%E7%89%87%E5%88%B0hexo%E6%A1%86%E6%9E%B6%E5%8D%9A%E5%AE%A2%E4%B8%AD/image-20250225211920912.png" srcset="/img/loading.gif" lazyload class="" title="image-20250225211920912">
+<p>上面那篇博文全文4节，前三节都是在讲类内图片插入的。这个注意点是 针对“二 2.解决图片路径问题”中Typora的设置。注意我上面图中用红框圈出来的选项千万不能选，千万不能选，千万不能选。</p>
+<h1>首页文章封面图片</h1>
+<img src="/2025/02/25/%E5%9F%BA%E4%BA%8ETypora%E6%8F%92%E5%85%A5%E5%9B%BE%E7%89%87%E5%88%B0hexo%E6%A1%86%E6%9E%B6%E5%8D%9A%E5%AE%A2%E4%B8%AD/image-20250225212741612.png" srcset="/img/loading.gif" lazyload class="" title="image-20250225212741612">
+<p>这一部分上面博文中没有讲清楚，我加以补充。</p>
+<h2 id="在source文件夹下新建images文件夹">在source文件夹下新建images文件夹</h2>
+<p>这里有三个注意点</p>
+<ol>
+<li>不要建在_post文件夹里面，images应该和__post是同一级的。</li>
+<li>命名为images这六个字母保证能行，其他名字不保证（我下面img文件夹似乎就不行）</li>
+<li>images里的所有图片的名字不要出现中文</li>
+</ol>
+<h2 id="把封面图复制到images文件夹中">把封面图复制到images文件夹中</h2>
+<p>这里有一个注意点：文件名全部为英文字母一定能行，文件名出现中文一定会有问题，其他符号不保证。</p>
+<h2 id="在博文最上方index-img处输入路径">在博文最上方index_img处输入路径</h2>
+<p>这里有两个注意点</p>
+<ol>
+<li>/images/xxx.png一定可行。开头一定是/</li>
+<li>右上到左下的/一定可行，\不保证</li>
+</ol>
+<h1>我对图片不能显示的理解</h1>
+<p>图片在网页端被显示要有两个条件：图片本身存在于public文件夹，并且博文插入图片处的链接正确指向了相应的图片。</p>
+<p>一般来说，只要Typora设置正确，图片本身应该是有的。大多数问题都出在链接没有正确指向图片上。</p>
+<p>对于文章内的图片，有hexo-asset-img插件来将图片链接从.md编译成HTML（似乎还要再变成hexo的一种特殊格式）但这款插件非常轻量级，代码非常短（您在node_modules文件夹下找到这个插件的文件夹，查看它的源码）强力保证了基本功能的实现，但又失之灵活。比如必须要新建一个和博文同名的文件夹存放图片，我个人更喜欢把所有图片统一放在一个asset文件夹中。又比如路径前不能有./，否则就会出错。当然，尽管在我看来有些缺点，能实现功能的插件就是好插件，毕竟hexo-asset-image插件已经年久失修不能直接用了。</p>
 
                 
               </div>
@@ -286,6 +321,13 @@
             <div>
               <div class="post-metas my-3">
   
+  
+    <div class="post-meta">
+      <i class="iconfont icon-tags"></i>
+      
+        <a href="/tags/%E5%8D%9A%E5%AE%A2%E6%90%AD%E5%BB%BA/" class="print-no-link">#博客搭建</a>
+      
+    </div>
   
 </div>
 
