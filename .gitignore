@@ -1,0 +1,35 @@
+# Zensical build output
+/site/
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Python virtual environment (if you use one)
+venv/
+env/
+ENV/
+.venv/
+.env/
+
+# Local configuration files (if any)
+.zensical/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Logs
+*.log
+*.out
+
+# Temporary files
+*.tmp
+*.temp
+*~
+.DS_Store
+Thumbs.db
