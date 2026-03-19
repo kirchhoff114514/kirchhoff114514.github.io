@@ -32,11 +32,9 @@ k 为组号，\(\theta\) 为一个常数参数，在《Attention is all you need
 ![img_v3_02vu_8aa622f9-a291-4aa1-a8da-1688fbfe8e7g](../assets/images/Part1-位置编码：RoPE与YARN/img_v3_02vu_8aa622f9-a291-4aa1-a8da-1688fbfe8e7g.png)
 
 设 w 为某个 token 对应的频率向量，则有
-
 $$
 {\vec \omega _{token}} = \vec \omega  \times token\_index
 $$
-
 比如，`channel` 对应的频率向量，就是把 w 整体乘以 4 得到的。比较靠前的 4.0、1.2649 等可以看作高频分量，而 0.004、0.0013 这样的值则属于低频分量。
 
 如果把旋转写成复数形式，那么 RoPE 可以概括为
@@ -50,101 +48,252 @@ $$
 
 ### YARN
 
-论文对 YaRN 的论述，并不是“直接把 RoPE 改一下”这么简单，而是先分析为什么普通 RoPE 和 PI 在长上下文外推时会失效，再一步步构造出最终方法。按照论文原文的脉络，整个思路可以分成五步：
+YaRN 在论文中的严格定义是：
 
-1. 普通RoPE在训练长度之外泛化很差
-2. PI（Position Interpolation）把所有位置统一压缩到训练范围内
-3. 统一压缩会损失高频信息，于是出现 `NTK-aware`
-4. 进一步分析不同维度的波长性质，得到 `NTK-by-parts`
-5. 最后再叠加 attention scaling，才得到完整的 `YaRN`
+1. 使用 `NTK-by-parts interpolation` 对 RoPE 的频率做分段缩放
+2. 使用 `attention scaling` 对注意力分数做温度补偿
 
-也就是说，严格按照论文定义，**YaRN = NTK-by-parts interpolation + attention scaling**，而不是单独的“分段缩放 RoPE 频率”。
+也就是说，YaRN 不是单独的一条频率修正公式，而是一套由“分段插值 + 注意力缩放”组成的长上下文扩展方法。
 
-#### 为什么普通RoPE不能直接外推
+#### 论文版YaRN算法
 
-论文把预训练最大上下文长度记为 $L$，目标扩展长度记为 $L'$，并定义缩放倍数
+设：
 
-$$
-s=\frac{L'}{L}
-$$
+- $L$：模型预训练时见过的最大上下文长度
+- $L'$：希望扩展到的目标上下文长度
+- $s=\frac{L'}{L}$：上下文扩展倍数
+- $\theta_d$：第 $d$ 个 RoPE 维度的原始频率
+- $\lambda_d=\frac{2\pi}{\theta_d}$：第 $d$ 个维度的波长
+- $r_d=\frac{L}{\lambda_d}$：在原始上下文长度 $L$ 内，第 $d$ 个维度大约会旋转多少圈
 
-RoPE 虽然从形式上看是相对位置编码，但论文指出：在实际模型里，不同维度并不都只编码纯粹的相对位置信息。某些维度在整个训练上下文中甚至还没完成一次完整旋转，因此这些维度实际上会保留较强的绝对位置信息。一旦直接把上下文拉长，这部分维度就会落到分布外，模型表现也会明显下降。
+这里最关键的是 $r_d$。它描述了某个 RoPE 维度在训练窗口内到底“转了几圈”：
 
-#### PI：最早的统一插值方法
+- 如果 $r_d$ 很大，说明这个维度转得很快，更偏向编码局部、相对位置
+- 如果 $r_d$ 很小，说明这个维度转得很慢，甚至在整个训练窗口里都转不满一圈，更偏向保留绝对位置信息
 
-PI 的思想很直接：既然模型只见过长度 $L$ 的位置，那就把更长序列的位置重新映射回 $[0,L]$ 范围内。也就是把原本的位置 $m$ 映射成大约 $m/s$，从而避免直接外推到训练长度之外。
-
-PI 的优点是简单、稳定，并且确实能把上下文长度扩展到比训练更长的范围；但它有一个明显的问题：它对所有 RoPE 维度都施加了相同的缩放压力，导致高频分量也被一起压扁。
-
-#### NTK-aware：缓解高频信息损失
-
-论文指出，PI 的主要副作用是**高频信息损失**。从频率角度看，RoPE 和 Fourier Features 很相似，高频分量对细粒度的位置区分非常重要。如果所有维度都统一缩放，高频部分就会被削弱，而且随着缩放倍数 $s$ 增大，这个问题会越来越严重。
-
-因此 `NTK-aware` 的思路是：不要让所有维度缩放得一样多，而是让高频缩得更少，低频缩得更多。最早的做法是通过修改 RoPE 的 base 来间接实现这一点。它比 PI 效果更好，但仍然有两个问题：
-
-- 最佳 base 很难直接算出来，通常需要经验调参
-- 有些维度会被推到“插值”与“外推”之间的尴尬区域，理论解释不够清晰
-
-#### NTK-by-parts：按波长分段处理
-
-这是通向 YaRN 最关键的一步。论文没有直接从“频率大还是小”出发，而是引入了**波长**：
+论文因此引入两个分段边界参数 $\alpha,\beta$，并定义一个线性过渡函数 $\gamma(r_d)$。这个 $\gamma(r_d)$ 本质上就是一个**插值权重**，用来决定第 $d$ 个维度到底更接近“原始 RoPE”还是更接近“PI 缩放”：
 
 $$
-\lambda_d=\frac{2\pi}{\theta_d}
+\gamma(r_d)=
+\begin{cases}
+1, & r_d < \alpha \\
+\frac{\beta-r_d}{\beta-\alpha}, & \alpha \le r_d \le \beta \\
+0, & r_d > \beta
+\end{cases}
 $$
 
-它表示第 $d$ 个 RoPE 维度完成一整圈旋转所对应的 token 长度。
+也就是说：
 
-有了波长以后，就可以更清楚地理解每个维度在训练窗口 $L$ 内扮演的角色：
+- 当 $r_d < \alpha$ 时，$\gamma(r_d)=1$，该维度完全采用插值
+- 当 $r_d > \beta$ 时，$\gamma(r_d)=0$，该维度完全保持原始频率
+- 当 $\alpha \le r_d \le \beta$ 时，$\gamma(r_d)$ 在 1 到 0 之间线性变化，表示该维度处在平滑过渡区
 
-- 如果 $\lambda_d \ll L$，说明该维度在训练窗口内已经转了很多圈，更偏向编码局部、相对位置信息，这类维度不应轻易改动
-- 如果 $\lambda_d \ge L$，说明该维度在训练窗口内甚至转不满一圈，更偏向携带绝对位置信息，这类维度应优先做插值
-- 中间区域则适合做平滑过渡
-
-为此，论文又定义了旋转次数比例
-
+从工程实现角度，可以把这件事理解成对频率做如下修正：
 $$
-r=\frac{L}{\lambda}
+\theta'_d = \theta_d \cdot \Big((1-\gamma_d) + \gamma_d / s\Big)
 $$
 
-并引入两个边界参数 $\alpha,\beta$：
+其中：
 
-- 当 $r < \alpha$ 时，完全按PI方式插值
-- 当 $r > \beta$ 时，不做插值
-- 中间区间做线性ramp过渡
+- $\gamma_d = 0$ 表示该维度完全不缩放。此时
+  $$
+  \theta'_d = \theta_d \cdot \big((1-0)+0/s\big)=\theta_d
+  $$
+  也就是说，这个维度保持原始 RoPE 频率不变，不做任何上下文插值。
+- $\gamma_d = 1$ 表示该维度完全按 PI 方式缩放。此时
+  $$
+  \theta'_d = \theta_d \cdot \big((1-1)+1/s\big)=\theta_d/s
+  $$
+  也就是说，这个维度的频率被直接缩小到原来的 $1/s$，与 Position Interpolation 的处理方式一致。
+- $0 < \gamma_d < 1$ 表示该维度处在平滑过渡区。此时
+  $$
+  \theta'_d = \theta_d \cdot \big((1-\gamma_d)+\gamma_d/s\big)
+  $$
+  它既不是完全保持原始频率，也不是完全按 PI 缩放，而是在两者之间做线性加权混合。权重越接近 0，说明越偏向原始 RoPE；权重越接近 1，说明越偏向 PI。
 
-这就是 `NTK-by-parts` 的本质。它不是简单粗暴地“高频不动、低频缩小”，而是从“这个维度在训练窗口里到底转了几圈”来判断该不该插值，因此理论解释也比 `NTK-aware` 更清晰。
+这样一来：
 
-如果把它写成工程上更容易实现的形式，就会得到类似下面的频率修正：
+- 高频、局部位置敏感的维度尽量保持原状
+- 低频、绝对位置倾向更强的维度按比例压缩
+- 中间区域线性过渡，避免突变
+
+这就是论文里 `NTK-by-parts interpolation` 的核心。
+
+#### Attention scaling
+
+在完成上面的频率分段缩放之后，论文还额外引入了 attention scaling。设 attention softmax 之前的分数为
+$$
+\frac{qk^\top}{\sqrt{d}}
+$$
+
+论文会再引入一个温度参数 $t$，把它改写为
+$$
+\frac{t \cdot qk^\top}{\sqrt{d}}
+$$
+或者等价地，把 $q$ 和 $k$ 同时缩放一个常数因子。
+
+论文指出，这个温度补偿可以显著改善长上下文下的困惑度表现，而且不必真的去改写 attention 算子本身。只要把 RoPE 之后的向量整体乘上一个常数，就能得到等价效果。因此 YaRN 既保留了理论上的 attention scaling，又保持了工程实现上的低开销。
+
+综合起来，论文版 YaRN 可以概括为：
 
 $$
-\theta'_k=\theta_k\cdot((1-\gamma_k)+\gamma_k/s)
+\text{YaRN} = \text{NTK-by-parts interpolation} + \text{attention scaling}
 $$
 
-其中 $\gamma_k$ 是一个 0 到 1 之间的线性过渡系数。这个写法和本项目代码中的实现形式非常接近：高频区基本不动，低频区按 $1/s$ 缩放，中间区域线性过渡。
+#### 工程版YaRN：前后两半的实现方式
 
-#### YaRN：在NTK-by-parts上再加attention scaling
+上面是论文里的数学定义。到了工程实现里，真正的难点不是“公式怎么写”，而是“如何高效地把二维旋转批量作用到整个张量上”。
 
-论文中真正的 YaRN 还多了一步：它发现如果在 attention softmax 之前对 logits 加一个温度缩放，长上下文下的困惑度会更稳定。论文把这个温度记为 $t$，并说明这一步不一定要直接修改 attention 代码本身，而是可以通过等价方式去缩放 RoPE 之后的 `q` 和 `k` 来实现。
+RoPE 的本质，是把向量按两维一组做二维旋转。以 4 维向量为例，如果写成
+$$
+[x_0, y_0, x_1, y_1]
+$$
+那么标准的二维旋转是：
+$$
+[x, y] \mapsto [x\cos\phi - y\sin\phi,\; x\sin\phi + y\cos\phi]
+$$
 
-因此，论文原始定义里的YaRN包含两部分：
+如果把一组二维向量写成
+$$
+[u, v]
+$$
+那么旋转后
+$$
+[u\cos - v\sin,\; u\sin + v\cos]
+$$
+还可以改写成
+$$
+[u, v]\cdot \cos + [-v, u]\cdot \sin
+$$
 
-1. `NTK-by-parts interpolation`
-2. `attention scaling`
+这个改写非常关键，因为它说明二维旋转可以拆成两部分：
 
-这也是为什么论文专门强调，YaRN 与 Flash Attention 等实现兼容，因为它并不需要真的改写 attention 算子，只要提前把旋转位置编码按合适的比例缩放即可。
+- 原向量本身乘上 `cos`
+- 再加上“旋转了 90 度”的向量 `[-v, u]` 乘上 `sin`
 
-#### 本项目代码与论文原始YaRN的对应关系
+后面的工程实现，本质上就是把这个二维公式批量推广到整个高维张量上。
 
-本项目 `precompute_freqs` 的实现，核心上对应的是论文中的 `NTK-by-parts` 思想：
+对两组同时应用后，结果应为：
+$$
+[x_0\cos\phi_0 - y_0\sin\phi_0,\; x_0\sin\phi_0 + y_0\cos\phi_0,\; x_1\cos\phi_1 - y_1\sin\phi_1,\; x_1\sin\phi_1 + y_1\cos\phi_1]
+$$
 
-- `factor` 对应上下文扩展倍数 $s$
-- `beta_fast` / `beta_slow` 对应论文里的分段边界参数
-- `ramp` 对应论文中的线性过渡区
+但是工程里通常不会逐组手写这个式子，而是会把它改写成统一形式：
+$$
+x_{\text{rope}} = x \cdot \cos + \operatorname{rotate}(x) \cdot \sin
+$$
 
-而代码里的 `attention_factor`，则是对论文里 attention scaling 的工程化实现。它直接乘在预先缓存好的 `cos/sin` 上，相当于把 RoPE 后的向量整体缩放一个常数。由于 attention 分数本质上来自 $q\cdot k$，因此这种做法可以在不改 attention 代码的情况下实现温度补偿。
+关键就在于这里的 `rotate(x)` 怎么定义。
 
-从代码逻辑上看，只有当目标长度 `end` 大于原始训练长度 `original_max_position_embeddings` 时，才会真正进入这套缩放流程；否则就退化成普通RoPE。
+本项目采用的是“前后两半”的实现方式。也就是说，不把向量看成
+$$
+[x_0, y_0, x_1, y_1]
+$$
+而是把它重新排布成
+$$
+[x_0, x_1, y_0, y_1]
+$$
+
+此时：
+
+- 前半部分保存所有二维组的第一个分量
+- 后半部分保存所有二维组的第二个分量
+
+对于这个布局，定义
+$$
+\operatorname{rotate\_half}([x_0, x_1, y_0, y_1]) = [-y_0, -y_1, x_0, x_1]
+$$
+
+那么再配合
+$$
+\cos = [\cos\phi_0, \cos\phi_1, \cos\phi_0, \cos\phi_1]
+$$
+和
+$$
+\sin = [\sin\phi_0, \sin\phi_1, \sin\phi_0, \sin\phi_1]
+$$
+
+就有
+$$
+x \cdot \cos + \operatorname{rotate\_half}(x)\cdot \sin
+$$
+等价于逐组执行二维旋转。
+
+把它逐项展开就是：
+$$
+[x_0\cos\phi_0 - y_0\sin\phi_0,\; x_1\cos\phi_1 - y_1\sin\phi_1,\; y_0\cos\phi_0 + x_0\sin\phi_0,\; y_1\cos\phi_1 + x_1\sin\phi_1]
+$$
+
+这与标准二维旋转完全等价，只是张量布局不同：
+
+- 数学表达通常写成“相邻两维一组”
+- 工程实现里则常写成“前半是实部，后半是虚部”
+
+这种写法的好处是：
+
+1. 不需要显式地把每两维拆成很多小块再逐块旋转
+2. 更容易利用张量广播做批量计算
+3. 更适合 GPU 上大批量的 `[batch, seq_len, num_heads, head_dim]` 运算
+
+因此，“前后两半”不是在修改 RoPE 或 YaRN 的数学定义，而只是把二维旋转改写成一种更适合工程实现的张量形式。
+
+## 理论与实现的变量映射
+
+这一节把论文中的变量、代码中的配置项，以及工程实现里的实际含义统一对应起来。
+
+#### 模型维度相关变量
+
+- `hidden_size`：一个 token 在模型主干中的总表示维度，也就是 embedding 长度和 hidden state 长度
+- `num_attention_heads`：注意力头数
+- `head_dim`：每个头分到的维度，等于 `hidden_size // num_attention_heads`
+- `dim`：传给 `precompute_freqs` 的实际值，本质上就是 `head_dim`
+
+这里要特别注意：RoPE 不是作用在整个 `hidden_size` 上，而是独立地作用在每个 attention head 的最后一维上，所以传给 `precompute_freqs` 的不是整个 `hidden_size`，而是 `head_dim`。
+
+#### 上下文长度相关变量
+
+- `original_max_position_embeddings`：论文中的原始训练长度 $L$
+- `end`：当前实现准备预计算到的最大位置数，可以理解为目标长度 $L'$
+- `factor`：上下文扩展倍数，对应论文中的 $s=\frac{L'}{L}$
+
+因此，`end` 更接近“当前模型准备支持多长上下文”，而 `original_max_position_embeddings` 才更接近“模型预训练时最初见过多长上下文”。
+
+#### 分段插值相关变量
+
+论文里的 `NTK-by-parts` 依赖的是“按旋转圈数分段”的思想，而本项目把它实现成了更直接的工程参数：
+
+- `beta_fast`
+- `beta_slow`
+- `ramp`
+
+它们的作用分别是：
+
+- `beta_fast`：高频边界。高于这个边界的维度基本不缩放
+- `beta_slow`：低频边界。低于这个边界的维度基本完全按 $1/s$ 缩放
+- `ramp`：在高频边界和低频边界之间做线性过渡
+
+代码中实际执行的是：
+$$
+\theta'_d = \theta_d \cdot \Big((1-\gamma_d) + \gamma_d / factor\Big)
+$$
+
+其中 `gamma_d` 就是由 `ramp` 给出的过渡系数。
+
+#### Attention scaling 相关变量
+
+- `attention_factor`：对应论文里的 attention scaling 的工程实现
+
+它不是改变频率本身，而是直接乘在最终的 `cos/sin` 上：
+$$
+\text{freqs\_cos} = \cos(\cdot)\times \text{attention\_factor}
+$$
+$$
+\text{freqs\_sin} = \sin(\cdot)\times \text{attention\_factor}
+$$
+
+由于最终 RoPE 后的 `q` 和 `k` 都会乘到这个系数，因此它等价于把 attention 分数里的 $qk^\top$ 整体缩放一个常数，从而实现论文里的温度补偿。
+
+
 
 ## 程序
 ### 函数与接口定义
@@ -155,8 +304,6 @@ $$
 - `apply_rotary_pos_emb`
 
 前者负责预先计算所有位置对应的 `cos/sin` 表，后者负责把这些表应用到注意力层中的 `q` 和 `k` 上。
-
-如果用论文术语来对应，那么这里的实现并不只是“普通 RoPE 工具函数”，而是把论文中的 `NTK-by-parts interpolation` 和 attention scaling 的一部分都折叠进了 `precompute_freqs` 这一步里。
 
 #### precompute_freqs
 
@@ -239,18 +386,3 @@ $$
 3. `MokioMindModel.forward` 根据当前序列起始位置 `start_pos` 和当前长度 `seq_length`，切出本轮所需的 `cos/sin`
 4. 每个 `MokioMindBlock` 把这组 `position_embeddings` 继续传给 `Attention.forward`
 5. `Attention.forward` 内部调用 `apply_rotary_pos_emb(xq, xk, cos, sin)`
-
-可以看到，`precompute_freqs` 更偏向“初始化阶段的准备工作”，而 `apply_rotary_pos_emb` 则是“每次注意力计算时真正应用位置编码的步骤”。
-
-### 与配置参数的对应关系
-
-结合本项目配置，可以把几个容易混淆的概念再统一一下：
-
-- `hidden_size`：一个 token 在模型主干中的总表示维度，也就是 embedding 长度和 hidden state 长度
-- `num_attention_heads`：注意力头数
-- `head_dim`：每个头分到的维度，等于 `hidden_size // num_attention_heads`
-- `dim`：传给 `precompute_freqs` 的实际值，本质上就是 `head_dim`
-- `end`：当前模型想预计算到的最大上下文长度，不一定等于预训练时的原始最大长度
-- `original_max_position_embeddings`：模型原始训练时使用的最大上下文长度，用于判断是否需要做YARN外推
-
-因此，`end` 更接近“当前要支持多长上下文”，而不是“模型训练时最初见过多长上下文”。当二者相同，模型只是在正常范围内使用 RoPE；当 `end` 更大时，就需要借助 YaRN 把 RoPE 扩展到更长上下文。
