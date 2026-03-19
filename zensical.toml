@@ -48,7 +48,7 @@ nav = [
   { "首页" = "index.md" },
   { "从0搭建minimind" = [
     "minimind/index.md",
-    "minimind/01-why-minimind.md",
+    "minimind/Part1-位置编码：RoPE与YARN.md",
   ]},
   { "写作" = "writing.md" },
   { "关于" = "about.md" },
@@ -311,4 +311,4 @@ toggle.name = "Switch to light mode"
 # ----------------------------------------------------------------------------
 [[project.extra.social]]
 icon = "fontawesome/brands/github"
-link = "https://github.com/your-github-username"
+link = "https://github.com/kirchhoff114514"

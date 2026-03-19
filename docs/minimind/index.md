@@ -13,6 +13,6 @@ icon: lucide/brain-circuit
 
 ## 文章列表
 
-1. [为什么我要从0搭建 minimind](01-why-minimind.md)
+1. [Part1-位置编码：RoPE与YARN](Part1-%E4%BD%8D%E7%BD%AE%E7%BC%96%E7%A0%81%EF%BC%9ARoPE%E4%B8%8EYARN.md)
 
 目前先保留这一篇，后续再继续扩展这个专栏。
