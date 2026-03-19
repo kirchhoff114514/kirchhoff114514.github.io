@@ -1,0 +1,45 @@
+:root {
+    --blog-accent: #0f766e;
+    --blog-accent-strong: #134e4a;
+    --blog-surface: rgba(255, 255, 255, 0.72);
+}
+
+[data-md-color-scheme="default"] body {
+    background:
+        radial-gradient(circle at top left, rgba(20, 184, 166, 0.12), transparent 28%),
+        linear-gradient(180deg, #f5fbfa 0%, #f6f8fc 100%);
+}
+
+[data-md-color-scheme="slate"] body {
+    background:
+        radial-gradient(circle at top left, rgba(45, 212, 191, 0.14), transparent 24%),
+        linear-gradient(180deg, #08131a 0%, #0f172a 100%);
+}
+
+.md-header {
+    backdrop-filter: blur(12px);
+}
+
+.md-typeset h1,
+.md-typeset h2,
+.md-typeset h3 {
+    letter-spacing: -0.025em;
+    font-weight: 800;
+}
+
+.md-typeset h1 {
+    color: var(--blog-accent-strong);
+}
+
+[data-md-color-scheme="slate"] .md-typeset h1 {
+    color: #7dd3fc;
+}
+
+.md-typeset .admonition,
+.md-typeset details {
+    border-radius: 16px;
+}
+
+.md-content__inner {
+    padding-bottom: 3rem;
+}
