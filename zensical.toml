@@ -63,6 +63,7 @@ nav = [
 # Read more: https://zensical.org/docs/customization/#additional-css
 #
 extra_css = ["stylesheets/extra.css"]
+extra_javascript = ["javascripts/mathjax.js"]
 
 # With the `extra_javascript` option you can add your own JavaScript to your
 # project to customize the behavior according to your needs.
@@ -312,3 +313,6 @@ toggle.name = "Switch to light mode"
 [[project.extra.social]]
 icon = "fontawesome/brands/github"
 link = "https://github.com/kirchhoff114514"
+
+[project.markdown_extensions.pymdownx.arithmatex]
+generic = true
