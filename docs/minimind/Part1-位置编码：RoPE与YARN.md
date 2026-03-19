@@ -37,6 +37,7 @@ k 为组号，\(\theta\) 为一个常数参数，在《Attention is all you need
 $$
 {\vec \omega _{token}} = \vec \omega  \times token\_index
 $$
+
 比如，`channel` 对应的频率向量，就是把 w 整体乘以 4 得到的。比较靠前的 4.0、1.2649 等可以看作高频分量，而 0.004、0.0013 这样的值则属于低频分量。
 
 如果把旋转写成复数形式，那么 RoPE 可以概括为
@@ -100,22 +101,13 @@ $$
 其中：
 
 - \(\gamma_d = 0\) 表示该维度完全不缩放。此时
-
-  $$
-  \theta'_d = \theta_d \cdot \big((1-0)+0/s\big)=\theta_d
-  $$
+  \(\theta'_d = \theta_d \cdot \big((1-0)+0/s\big)=\theta_d\)。
   也就是说，这个维度保持原始 RoPE 频率不变，不做任何上下文插值。
 - \(\gamma_d = 1\) 表示该维度完全按 PI 方式缩放。此时
-
-  $$
-  \theta'_d = \theta_d \cdot \big((1-1)+1/s\big)=\theta_d/s
-  $$
+  \(\theta'_d = \theta_d \cdot \big((1-1)+1/s\big)=\theta_d/s\)。
   也就是说，这个维度的频率被直接缩小到原来的 \(1/s\)，与 Position Interpolation 的处理方式一致。
 - \(0 < \gamma_d < 1\) 表示该维度处在平滑过渡区。此时
-
-  $$
-  \theta'_d = \theta_d \cdot \big((1-\gamma_d)+\gamma_d/s\big)
-  $$
+  \(\theta'_d = \theta_d \cdot \big((1-\gamma_d)+\gamma_d/s\big)\)。
   它既不是完全保持原始频率，也不是完全按 PI 缩放，而是在两者之间做线性加权混合。权重越接近 0，说明越偏向原始 RoPE；权重越接近 1，说明越偏向 PI。
 
 这样一来：
@@ -139,6 +131,7 @@ $$
 $$
 \frac{t \cdot qk^\top}{\sqrt{d}}
 $$
+
 或者等价地，把 \(q\) 和 \(k\) 同时缩放一个常数因子。
 
 论文指出，这个温度补偿可以显著改善长上下文下的困惑度表现，而且不必真的去改写 attention 算子本身。只要把 RoPE 之后的向量整体乘上一个常数，就能得到等价效果。因此 YaRN 既保留了理论上的 attention scaling，又保持了工程实现上的低开销。
@@ -158,6 +151,7 @@ RoPE 的本质，是把向量按两维一组做二维旋转。以 4 维向量为
 $$
 [x_0, y_0, x_1, y_1]
 $$
+
 那么标准的二维旋转是：
 
 $$
@@ -169,11 +163,13 @@ $$
 $$
 [u, v]
 $$
+
 那么旋转后
 
 $$
 [u\cos - v\sin,\; u\sin + v\cos]
 $$
+
 还可以改写成
 
 $$
@@ -206,6 +202,7 @@ $$
 $$
 [x_0, y_0, x_1, y_1]
 $$
+
 而是把它重新排布成
 
 $$
@@ -228,6 +225,7 @@ $$
 $$
 \cos = [\cos\phi_0, \cos\phi_1, \cos\phi_0, \cos\phi_1]
 $$
+
 和
 
 $$
@@ -239,6 +237,7 @@ $$
 $$
 x \cdot \cos + \operatorname{rotate\_half}(x)\cdot \sin
 $$
+
 等价于逐组执行二维旋转。
 
 把它逐项展开就是：
