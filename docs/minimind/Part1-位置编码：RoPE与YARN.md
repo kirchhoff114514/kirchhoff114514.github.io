@@ -15,6 +15,7 @@ title: Part1-位置编码：RoPE与YARN
 对这个 token 做位置编码，本质上就是对这个向量做旋转。不过这里并不是把整个向量作为一个整体去旋转，而是把各个维度两两配对后，分别进行二维旋转。如上图所示，16 个维度被分成 8 组，每组两个分量。组号记为 k，取值范围是 0 到 7。
 
 每组旋转的角度由下面的公式给出：
+
 $$
 \omega_k=\frac{1}{\theta^{2k/d}}
 $$
@@ -32,12 +33,14 @@ k 为组号，\(\theta\) 为一个常数参数，在《Attention is all you need
 ![img_v3_02vu_8aa622f9-a291-4aa1-a8da-1688fbfe8e7g](../assets/images/Part1-位置编码：RoPE与YARN/img_v3_02vu_8aa622f9-a291-4aa1-a8da-1688fbfe8e7g.png)
 
 设 w 为某个 token 对应的频率向量，则有
+
 $$
 {\vec \omega _{token}} = \vec \omega  \times token\_index
 $$
 比如，`channel` 对应的频率向量，就是把 w 整体乘以 4 得到的。比较靠前的 4.0、1.2649 等可以看作高频分量，而 0.004、0.0013 这样的值则属于低频分量。
 
 如果把旋转写成复数形式，那么 RoPE 可以概括为
+
 $$
 f_{\boldsymbol{W}}(x_m,m,\theta)=e^{im\boldsymbol{\theta}}Wx_m
 $$
@@ -59,19 +62,19 @@ YaRN 在论文中的严格定义是：
 
 设：
 
-- $L$：模型预训练时见过的最大上下文长度
-- $L'$：希望扩展到的目标上下文长度
-- $s=\frac{L'}{L}$：上下文扩展倍数
-- $\theta_d$：第 $d$ 个 RoPE 维度的原始频率
-- $\lambda_d=\frac{2\pi}{\theta_d}$：第 $d$ 个维度的波长
-- $r_d=\frac{L}{\lambda_d}$：在原始上下文长度 $L$ 内，第 $d$ 个维度大约会旋转多少圈
+- \(L\)：模型预训练时见过的最大上下文长度
+- \(L'\)：希望扩展到的目标上下文长度
+- \(s=\frac{L'}{L}\)：上下文扩展倍数
+- \(\theta_d\)：第 \(d\) 个 RoPE 维度的原始频率
+- \(\lambda_d=\frac{2\pi}{\theta_d}\)：第 \(d\) 个维度的波长
+- \(r_d=\frac{L}{\lambda_d}\)：在原始上下文长度 \(L\) 内，第 \(d\) 个维度大约会旋转多少圈
 
-这里最关键的是 $r_d$。它描述了某个 RoPE 维度在训练窗口内到底“转了几圈”：
+这里最关键的是 \(r_d\)。它描述了某个 RoPE 维度在训练窗口内到底“转了几圈”：
 
-- 如果 $r_d$ 很大，说明这个维度转得很快，更偏向编码局部、相对位置
-- 如果 $r_d$ 很小，说明这个维度转得很慢，甚至在整个训练窗口里都转不满一圈，更偏向保留绝对位置信息
+- 如果 \(r_d\) 很大，说明这个维度转得很快，更偏向编码局部、相对位置
+- 如果 \(r_d\) 很小，说明这个维度转得很慢，甚至在整个训练窗口里都转不满一圈，更偏向保留绝对位置信息
 
-论文因此引入两个分段边界参数 $\alpha,\beta$，并定义一个线性过渡函数 $\gamma(r_d)$。这个 $\gamma(r_d)$ 本质上就是一个**插值权重**，用来决定第 $d$ 个维度到底更接近“原始 RoPE”还是更接近“PI 缩放”：
+论文因此引入两个分段边界参数 \(\alpha,\beta\)，并定义一个线性过渡函数 \(\gamma(r_d)\)。这个 \(\gamma(r_d)\) 本质上就是一个**插值权重**，用来决定第 \(d\) 个维度到底更接近“原始 RoPE”还是更接近“PI 缩放”：
 
 $$
 \gamma(r_d)=
@@ -84,28 +87,32 @@ $$
 
 也就是说：
 
-- 当 $r_d < \alpha$ 时，$\gamma(r_d)=1$，该维度完全采用插值
-- 当 $r_d > \beta$ 时，$\gamma(r_d)=0$，该维度完全保持原始频率
-- 当 $\alpha \le r_d \le \beta$ 时，$\gamma(r_d)$ 在 1 到 0 之间线性变化，表示该维度处在平滑过渡区
+- 当 \(r_d < \alpha\) 时，\(\gamma(r_d)=1\)，该维度完全采用插值
+- 当 \(r_d > \beta\) 时，\(\gamma(r_d)=0\)，该维度完全保持原始频率
+- 当 \(\alpha \le r_d \le \beta\) 时，\(\gamma(r_d)\) 在 1 到 0 之间线性变化，表示该维度处在平滑过渡区
 
 从工程实现角度，可以把这件事理解成对频率做如下修正：
+
 $$
 \theta'_d = \theta_d \cdot \Big((1-\gamma_d) + \gamma_d / s\Big)
 $$
 
 其中：
 
-- $\gamma_d = 0$ 表示该维度完全不缩放。此时
+- \(\gamma_d = 0\) 表示该维度完全不缩放。此时
+
   $$
   \theta'_d = \theta_d \cdot \big((1-0)+0/s\big)=\theta_d
   $$
   也就是说，这个维度保持原始 RoPE 频率不变，不做任何上下文插值。
-- $\gamma_d = 1$ 表示该维度完全按 PI 方式缩放。此时
+- \(\gamma_d = 1\) 表示该维度完全按 PI 方式缩放。此时
+
   $$
   \theta'_d = \theta_d \cdot \big((1-1)+1/s\big)=\theta_d/s
   $$
-  也就是说，这个维度的频率被直接缩小到原来的 $1/s$，与 Position Interpolation 的处理方式一致。
-- $0 < \gamma_d < 1$ 表示该维度处在平滑过渡区。此时
+  也就是说，这个维度的频率被直接缩小到原来的 \(1/s\)，与 Position Interpolation 的处理方式一致。
+- \(0 < \gamma_d < 1\) 表示该维度处在平滑过渡区。此时
+
   $$
   \theta'_d = \theta_d \cdot \big((1-\gamma_d)+\gamma_d/s\big)
   $$
@@ -122,15 +129,17 @@ $$
 #### Attention scaling
 
 在完成上面的频率分段缩放之后，论文还额外引入了 attention scaling。设 attention softmax 之前的分数为
+
 $$
 \frac{qk^\top}{\sqrt{d}}
 $$
 
-论文会再引入一个温度参数 $t$，把它改写为
+论文会再引入一个温度参数 \(t\)，把它改写为
+
 $$
 \frac{t \cdot qk^\top}{\sqrt{d}}
 $$
-或者等价地，把 $q$ 和 $k$ 同时缩放一个常数因子。
+或者等价地，把 \(q\) 和 \(k\) 同时缩放一个常数因子。
 
 论文指出，这个温度补偿可以显著改善长上下文下的困惑度表现，而且不必真的去改写 attention 算子本身。只要把 RoPE 之后的向量整体乘上一个常数，就能得到等价效果。因此 YaRN 既保留了理论上的 attention scaling，又保持了工程实现上的低开销。
 
@@ -145,23 +154,28 @@ $$
 上面是论文里的数学定义。到了工程实现里，真正的难点不是“公式怎么写”，而是“如何高效地把二维旋转批量作用到整个张量上”。
 
 RoPE 的本质，是把向量按两维一组做二维旋转。以 4 维向量为例，如果写成
+
 $$
 [x_0, y_0, x_1, y_1]
 $$
 那么标准的二维旋转是：
+
 $$
 [x, y] \mapsto [x\cos\phi - y\sin\phi,\; x\sin\phi + y\cos\phi]
 $$
 
 如果把一组二维向量写成
+
 $$
 [u, v]
 $$
 那么旋转后
+
 $$
 [u\cos - v\sin,\; u\sin + v\cos]
 $$
 还可以改写成
+
 $$
 [u, v]\cdot \cos + [-v, u]\cdot \sin
 $$
@@ -174,11 +188,13 @@ $$
 后面的工程实现，本质上就是把这个二维公式批量推广到整个高维张量上。
 
 对两组同时应用后，结果应为：
+
 $$
 [x_0\cos\phi_0 - y_0\sin\phi_0,\; x_0\sin\phi_0 + y_0\cos\phi_0,\; x_1\cos\phi_1 - y_1\sin\phi_1,\; x_1\sin\phi_1 + y_1\cos\phi_1]
 $$
 
 但是工程里通常不会逐组手写这个式子，而是会把它改写成统一形式：
+
 $$
 x_{\text{rope}} = x \cdot \cos + \operatorname{rotate}(x) \cdot \sin
 $$
@@ -186,10 +202,12 @@ $$
 关键就在于这里的 `rotate(x)` 怎么定义。
 
 本项目采用的是“前后两半”的实现方式。也就是说，不把向量看成
+
 $$
 [x_0, y_0, x_1, y_1]
 $$
 而是把它重新排布成
+
 $$
 [x_0, x_1, y_0, y_1]
 $$
@@ -200,26 +218,31 @@ $$
 - 后半部分保存所有二维组的第二个分量
 
 对于这个布局，定义
+
 $$
 \operatorname{rotate\_half}([x_0, x_1, y_0, y_1]) = [-y_0, -y_1, x_0, x_1]
 $$
 
 那么再配合
+
 $$
 \cos = [\cos\phi_0, \cos\phi_1, \cos\phi_0, \cos\phi_1]
 $$
 和
+
 $$
 \sin = [\sin\phi_0, \sin\phi_1, \sin\phi_0, \sin\phi_1]
 $$
 
 就有
+
 $$
 x \cdot \cos + \operatorname{rotate\_half}(x)\cdot \sin
 $$
 等价于逐组执行二维旋转。
 
 把它逐项展开就是：
+
 $$
 [x_0\cos\phi_0 - y_0\sin\phi_0,\; x_1\cos\phi_1 - y_1\sin\phi_1,\; y_0\cos\phi_0 + x_0\sin\phi_0,\; y_1\cos\phi_1 + x_1\sin\phi_1]
 $$
@@ -252,9 +275,9 @@ $$
 
 #### 上下文长度相关变量
 
-- `original_max_position_embeddings`：论文中的原始训练长度 $L$
-- `end`：当前实现准备预计算到的最大位置数，可以理解为目标长度 $L'$
-- `factor`：上下文扩展倍数，对应论文中的 $s=\frac{L'}{L}$
+- `original_max_position_embeddings`：论文中的原始训练长度 \(L\)
+- `end`：当前实现准备预计算到的最大位置数，可以理解为目标长度 \(L'\)
+- `factor`：上下文扩展倍数，对应论文中的 \(s=\frac{L'}{L}\)
 
 因此，`end` 更接近“当前模型准备支持多长上下文”，而 `original_max_position_embeddings` 才更接近“模型预训练时最初见过多长上下文”。
 
@@ -269,10 +292,11 @@ $$
 它们的作用分别是：
 
 - `beta_fast`：高频边界。高于这个边界的维度基本不缩放
-- `beta_slow`：低频边界。低于这个边界的维度基本完全按 $1/s$ 缩放
+- `beta_slow`：低频边界。低于这个边界的维度基本完全按 \(1/s\) 缩放
 - `ramp`：在高频边界和低频边界之间做线性过渡
 
 代码中实际执行的是：
+
 $$
 \theta'_d = \theta_d \cdot \Big((1-\gamma_d) + \gamma_d / factor\Big)
 $$
@@ -284,14 +308,16 @@ $$
 - `attention_factor`：对应论文里的 attention scaling 的工程实现
 
 它不是改变频率本身，而是直接乘在最终的 `cos/sin` 上：
+
 $$
 \text{freqs\_cos} = \cos(\cdot)\times \text{attention\_factor}
 $$
+
 $$
 \text{freqs\_sin} = \sin(\cdot)\times \text{attention\_factor}
 $$
 
-由于最终 RoPE 后的 `q` 和 `k` 都会乘到这个系数，因此它等价于把 attention 分数里的 $qk^\top$ 整体缩放一个常数，从而实现论文里的温度补偿。
+由于最终 RoPE 后的 `q` 和 `k` 都会乘到这个系数，因此它等价于把 attention 分数里的 \(qk^\top\) 整体缩放一个常数，从而实现论文里的温度补偿。
 
 
 
